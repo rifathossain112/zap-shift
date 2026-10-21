@@ -11,12 +11,16 @@ const MyParcels = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
   const { data: parcels = [], refetch } = useQuery({
-    queryKey: ['my-parcels', user?.email],
-    queryFn: async () => {
-      const res = await axiosSecure.get(`/parcels?email=${user.email}`);
-      return res.data;
-    }
-  })
+  queryKey: ['my-parcels', user?.email],
+  enabled: !!user?.email,
+  queryFn: async () => {
+    const res = await axiosSecure.get(`/parcels?email=${user.email}`);
+    console.log(res.data);
+    return res.data;
+  }
+});
+console.log("User:", user);
+console.log("Email:", user?.email);
   const handleParcelDelete = id => {
     console.log(id);
     Swal.fire({
@@ -46,7 +50,19 @@ const MyParcels = () => {
 
       }
     });
-  }
+  };
+  const handlePayment = async(parcel) =>{
+      const paymentInfo = {
+        cost: parcel.cost,
+        parcelId: parcel._id,
+        senderEmail: parcel.senderEmail,
+        parcelName: parcel.parcelName,
+        trackingId: parcel.trackingId
+      }
+      const res = await axiosSecure.post('/payment-checkout-session', paymentInfo);
+      // console.log(res.data.url);
+      window.location.assign(res.data.url);
+  };
   return (
     <div>
       <h2>ALL of my parcels:{parcels.length}</h2>
@@ -59,6 +75,7 @@ const MyParcels = () => {
               <th>Name</th>
               <th>Cost</th>
               <th>Payment</th>
+              <th>Tracking Id</th>
               <th>Delivery Status</th>
               <th>Actinos</th>
             </tr>
@@ -70,16 +87,19 @@ const MyParcels = () => {
                 <td>{parcel.parcelName}</td>
                 <td>{parcel.cost}</td>
                 <td>
-                  {
-                    parcel.paymentStatus === 'paid' ? 
-                    <span className='text-green-400'>Paid</span>
-                    :
-                    <Link to={`/dashboard/payment/${parcel._id}`}>
-                    <button className='btn btn-sm btn-primary text-black'>
-                    Pay
+                  {parcel.paymentStatus === 'paid' ? (
+                    <span className='text-green-400 font-semibold'>Paid</span>
+                  ) : (
+                    <button 
+                      onClick={() => handlePayment(parcel)} 
+                      className='btn btn-sm btn-primary text-black'
+                    >
+                      Pay
                     </button>
-                    </Link>
-                  }
+                  )}
+                </td>
+                <td>
+                  <Link to={`/parcel-track/${parcel.trackingId}`}>{parcel.trackingId}</Link>
                 </td>
                 <td>{parcel.deliveryStatus}</td>
   

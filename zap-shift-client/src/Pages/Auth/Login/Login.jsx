@@ -6,13 +6,13 @@ import SocilaLogin from '../SocialLogin/SocilaLogin';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const { signInUser } = useAuth();
+  const {  singInUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   // console.log('in the login location', location)
   const handleLogin = (data) => {
     console.log('data', data)
-    signInUser(data.email, data.password).then(result => {
+     singInUser(data.email, data.password).then(result => {
       console.log(result.user);
       navigate(location?.state || '/')
     }).catch(error => {
